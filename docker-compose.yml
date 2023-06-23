@@ -1,0 +1,12 @@
+services:
+  markdown-toc:
+    build: "./markdown-toc"
+    ports:
+      - "8080:80"
+
+  markdown-toc-frontend:
+    build: "./markdown-toc-frontend"
+    ports:
+      - "8081:80"
+    depends_on:
+      - markdown-toc

@@ -1,0 +1,8 @@
+services:
+  markdown-toc:
+    volumes:
+      - ./markdown-toc/serve:/var/www/html:ro
+
+  markdown-toc-frontend:
+    volumes:
+      - ./markdown-toc-frontend/serve:/var/www/html:ro
