@@ -9,7 +9,7 @@ spec:
   ports:
   - port: 80 # service's incoming port
     targetPort: 80 # pods' incoming port
-    nodePort: 30000
+    nodePort: 30000 # should be removed in production
   selector:
     app: markdown-toc-app
     tier: backend
