@@ -13,6 +13,10 @@
                 <div class="col-12">
                     <h1 class="fw-bold">Markdown T<span class="fs-6 fw-normal">able</span>O<span class="fs-6 fw-normal">f</span>C<span class="fs-6 fw-normal">ontents</span></h1>
                 </div>
+
+                <div class="col-12">
+                    <p class="fst-italic text-secondary">Powered by <a href="https://github.com/jonschlinkert/markdown-toc">markdown-toc</a></p>
+                </div>
             
                 <form class="col form-floating" method="post">
                     <div class="row align-items-center gy-3 mb-3">
