@@ -25,6 +25,7 @@ spec:
   selector:
     matchLabels:
       app: markdown-toc-app
+      tier: backend
   template:
     metadata:
       labels:
@@ -36,3 +37,32 @@ spec:
         image: ventus218/markdown-toc
         ports:
         - containerPort: 80
+        resources:
+          requests:
+            cpu: 10m
+          limits:
+            cpu: 100m
+---
+apiVersion: autoscaling/v2 # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec
+kind: HorizontalPodAutoscaler
+metadata:
+  name: markdown-toc-hpa
+  labels:
+    app: markdown-toc
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: markdown-toc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 30 # default is 300, reduced for debugging purposes
