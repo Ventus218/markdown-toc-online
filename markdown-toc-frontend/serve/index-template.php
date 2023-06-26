@@ -14,9 +14,10 @@
                     <h1 class="fw-bold">Markdown T<span class="fs-6 fw-normal">able</span>O<span class="fs-6 fw-normal">f</span>C<span class="fs-6 fw-normal">ontents</span></h1>
                 </div>
             
-                <form class="col form-floating" action="" method="post">
+                <form class="col form-floating" method="post">
                     <div class="row align-items-center gy-3 mb-3">
                         <div class="col-md col-12">
+                            <label class="visually-hidden" for="md-text">Markdown input</label>
                             <textarea class="form-control" style="height: 40vh;" name="md-text" id="md-text" placeholder="# Title
 
 <!-- toc here -->
@@ -33,6 +34,7 @@ bar
                             <button class="form-control btn btn-primary" type="submit">Generate</button>
                         </div>
                         <div class="col-md col-12">
+                            <label class="visually-hidden" for="toc">Generated markdown</label>
                             <textarea class="form-control" style="height: 40vh;" id="toc"><?php echo $toc ?? ""; ?></textarea>
                         </div>
                     </div>
@@ -44,7 +46,7 @@ bar
                             <div class="col-12">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
-                                        <label for="max-depth">Max depth</label>
+                                        <label for="max-depth-input">Max depth</label>
                                     </div>
                                     <div class="col-auto">
                                         <input class="form-control" type="number" name="max-depth" id="max-depth-input" value="<?php echo $max_depth ?? 6 ?>" min="1" required/>
@@ -54,7 +56,7 @@ bar
                             <div class="col-12">
                                 <div class="row align-items-center">
                                     <div class="col-auto">
-                                        <label class="form-check-label" for="no-first-h1">Exclude first H1</label>
+                                        <label class="form-check-label" for="no-first-h1-input">Exclude first H1</label>
                                     </div>
                                     <div class="col-auto">
                                         <input class="form-check-input" type="checkbox" name="no-first-h1" id="no-first-h1-input" <?php echo ($no_first_h1 ?? true) ? "checked" : ""; ?>/>
