@@ -1,0 +1,23 @@
+apiVersion: autoscaling/v2 # https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/horizontal-pod-autoscaler-v2/#HorizontalPodAutoscalerSpec
+kind: HorizontalPodAutoscaler
+metadata:
+  name: markdown-toc-hpa
+  labels:
+    app: markdown-toc
+spec:
+  scaleTargetRef: # Defining the deployment which will be targeted by this hpa
+    apiVersion: apps/v1
+    kind: Deployment
+    name: markdown-toc
+  minReplicas: 1
+  maxReplicas: 10
+  metrics:
+  - type: Resource # Defining the metric on which the scaling will be based on
+    resource:
+      name: cpu
+      target: # Setting the target cpu utilization
+        type: Utilization
+        averageUtilization: 50
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 30 # default is 300, reduced in order to allow the pods to scale down faster
