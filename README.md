@@ -6,6 +6,23 @@ E' possibile fruire del servizio sia attraverso una pagina web che attraverso un
 
 ![Markdown TOC frontend](./doc/img/frontend.png)
 
+- [Obiettivi](#obiettivi)
+- [I servizi in gioco](#i-servizi-in-gioco)
+- [Predisposizione alla containerizzazione](#predisposizione-alla-containerizzazione)
+  * [Parametrizzazione](#parametrizzazione)
+- [Creazione delle immagini](#creazione-delle-immagini)
+- [I file di configurazione per Kubernetes](#i-file-di-configurazione-per-kubernetes)
+  * [Risoluzione dei nomi](#risoluzione-dei-nomi)
+  * [Horizontal Pod Autoscaler](#horizontal-pod-autoscaler)
+- [Testing su minikube](#testing-su-minikube)
+- [Distribuzione in cloud](#distribuzione-in-cloud)
+- [Terraform](#terraform)
+- [I file di configurazione per Terraform](#i-file-di-configurazione-per-terraform)
+- [Testing su cloud (Azure)](#testing-su-cloud-azure)
+  * [Autenticarsi ad Azure](#autenticarsi-ad-azure)
+  * [Creazione dell'infrastruttura (Terraform)](#creazione-dellinfrastruttura-terraform)
+  * [Creazione dei servizi nel cluster](#creazione-dei-servizi-nel-cluster)
+
 ## Obiettivi
 
 Con questo progetto si vuole dispiegare due servizi all'interno di un cluster Kubernetes in cloud.
