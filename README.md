@@ -38,11 +38,11 @@ I servizi da dispiegare sono due:
 - markdown-toc (l'API web)
 - markdown-toc-frontend (il frontend web)
 
-L'API web deve essere esposta su internet.
+Entrambi i servizi devono essere accessibili via internet.
 
 Il frontend è solo un altro modo di fruire dell'API web, in questo modo la logica applicativa non è duplicata.
 
-<!-- TODO: immagine architettura -->
+![Semplificazione dell'architettura](./doc/img/simplified_architecture.png)
 ## Predisposizione alla containerizzazione
 
 ### Parametrizzazione
@@ -76,26 +76,26 @@ docker build -t markdown-toc-frontend ./markdown-toc-frontend
 ```
 
 ## I file di configurazione per Kubernetes
-Sia per l'API web che per il frontend vogliamo creare:
+Sia per l'API web che per il frontend si vuole creare:
 - un *Deployment*, nel quale definiremo le immagini da utilizzare per i pod e altre configurazioni
 - un *Service* che fungerà da punto di accesso unico ai pod e ne bilancerà il carico
-- un *Horizontal Pod Autoscaler* che farà in modo di aumentare o diminuire il numero di pod in base al carico di lavoro
+- un *Horizontal Pod Autoscaler* (HPA) che farà in modo di aumentare o diminuire il numero di pod in base al carico di lavoro
 
-Service e Deployment dell'API web: [markdown-toc.yaml](./markdown-toc.yaml)
+Service e deployment dell'API web: [markdown-toc.yaml](./markdown-toc.yaml)
 
-Service e Deployment del frontend: [markdown-toc-frontend.yaml](./markdown-toc-frontend.yaml)
+Service e deployment del frontend: [markdown-toc-frontend.yaml](./markdown-toc-frontend.yaml)
 
 > **Nota**
 >
-> In realtà all'interno dei file di configurazione, non sono indicate le immagini docker che sono appena state create.
-> Sono invece indicate le due immagini caricate da me su Docker hub.
+> In realtà all'interno dei file di configurazione, non sono indicate le immagini Docker che sono appena state create.
+> Sono invece indicate le due immagini caricate da me su Docker Hub.
 >
-> Questo è dovuto al fatto che minikube non si connette al Docker registry sull'host ma ne ha uno al suo interno e, sebbene [sarebbe possibile](https://medium.com/swlh/how-to-run-locally-built-docker-images-in-kubernetes-b28fbc32cc1d) "inviare" a minikube le immagini appena costruite, questo non sarebbe altrettanto semplice per quando poi si andrà ad utilizzare un cloud provider.
+> Questo è dovuto al fatto che Minikube non si connette al Docker registry sull'host ma ne ha uno al suo interno e, sebbene [sarebbe possibile](https://medium.com/swlh/how-to-run-locally-built-docker-images-in-kubernetes-b28fbc32cc1d) "inviare" a Minikube le immagini appena costruite, questo non sarebbe altrettanto semplice per quando poi si andrà ad utilizzare un cloud provider.
 
 ### Risoluzione dei nomi
-La cosa fondamentale è fare attenzione al nome che daremo ai due Service perchè ci permetterà di sfruttare il sistema DNS interno al cluster per permettere la comunicazione tra i due diversi pod.
+La cosa fondamentale è fare attenzione al nome verrà dato ai due service perchè permetterà di sfruttare il sistema DNS interno al cluster per permettere la comunicazione tra i due diversi pod.
 
-Infatti si è scelto *markdown-toc* come nome del Service dell'API così che coincida con il valore di default che [abbiamo settato](#dockerfile-env) nel Dockerfile del frontend.
+Infatti si è scelto *markdown-toc* come nome del service dell'API così che coincida con il valore di default che [abbiamo settato](#dockerfile-env) nel Dockerfile del frontend.
 
 ```yaml
 # markdown-toc.yaml
@@ -110,27 +110,27 @@ metadata:
 
 ### Horizontal Pod Autoscaler
 
-I file [markdown-toc-hpa.yaml](./markdown-toc-hpa.yaml) e [markdown-toc-frontend-hpa.yaml](./markdown-toc-frontend-hpa.yaml) definiscono gli Horizontal Pod Autoscaler per entrambi i Service.
+I file [markdown-toc-hpa.yaml](./markdown-toc-hpa.yaml) e [markdown-toc-frontend-hpa.yaml](./markdown-toc-frontend-hpa.yaml) definiscono gli horizontal pod autoscaler per entrambi i service.
 
 Sono quasi identici nella sostanza, per i dettagli della configurazione si leggano i commenti in [markdown-toc-hpa.yaml](./markdown-toc-hpa.yaml).
 
-## Testing su minikube
+## Testing su Minikube
 
-Per prima cosa facciamo partire minikube e poi installiamo il metric server (necessario per l'Horizontal Pod Autoscaling):
+Per prima cosa far partire Minikube e poi installare il metric server (necessario per l'HPA):
 ```sh
 minikube start
 minikube addons enable metrics-server
 ```
 
-Ora sempre dalla cartella radice della repository instanziamo i deployment e i service:
+Ora sempre dalla cartella radice della repository instanziare i deployment e i service:
 ```sh
 kubectl apply -f ./markdown-toc.yaml
 kubectl apply -f ./markdown-toc-frontend.yaml
 ```
 
-Adesso testiamo che i pod e i service funzionino.
+Adesso si testi il funzionamento dei pod e dei service.
 
-Testiamo il backend:
+Testing del backend:
 ```sh
 curl --location "$(minikube service --url markdown-toc)/markdown-toc.php" \
 --header 'Content-Type: application/json' \
@@ -139,22 +139,22 @@ curl --location "$(minikube service --url markdown-toc)/markdown-toc.php" \
 }'
 ```
 
-Testiamo il frontend:
+Testing del frontend:
 ```sh
 minikube service markdown-toc-frontend
 ```
 
 Si noti che quando viene generata la table of contents viene anche restituito un indirizzo ip. Quello è l'indirizzo (interno al cluster) del pod che ha eseguito la richiesta.
 
-Questo ci permette di osservare che il LoadBalancer sta distribuendo il carico tra i pod, infatti effettuando più volte la richiesta l'indirizzo in questione cambia.
+Questo permette di osservare che il LoadBalancer sta distribuendo il carico tra i pod, infatti effettuando più volte la richiesta l'indirizzo in questione cambia.
 
-Ora attiviamo gli Horizontal Pod Autoscaler:
+Per attivare gli horizontal pod autoscaler:
 ```sh
 kubectl apply -f ./markdown-toc-hpa.yaml
 kubectl apply -f ./markdown-toc-frontend-hpa.yaml
 ```
 
-E in un altro terminale eseguiamo:
+E in un altro terminale eseguire:
 ```sh
 kubectl get hpa --watch
 
@@ -176,9 +176,9 @@ E' normale che ci voglia più o meno tempo prima che l'hpa riesca ad ottenere le
 
 Inizialmente le repliche sono due, come definito dal deployment nei file di configurazione yaml.
 
-Poco dopo vediamo che le repliche calano a 1, questo succede in quanto il carico è inferiore al target e quindi l'hpa scala verso il basso il numero di pod.
+Poco dopo si può notare che le repliche calano a 1, questo succede in quanto il carico è inferiore al target e quindi l'hpa scala verso il basso il numero di pod.
 
-Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo genereremo del carico con lo script workload.sh (carica di lavoro solo l'API web non il frontend):
+Adesso si può testare anche che i pod possano scalare verso l'alto. Per farlo si genererà del carico con lo script workload.sh (carica di lavoro solo l'API web non il frontend):
 ```sh
 # il primo parametro indica l'indirizzo al quale inviare le richieste
 # il secondo invece l'intervallo di tempo in secondi tra una richiesta e l'altra
@@ -187,7 +187,7 @@ Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo generere
 ./workload.sh "$(minikube service --url markdown-toc)" 1.5
 ```
 
-Continiuamo ad osservare gli hpa e noteremo che dopo poco tempo da quanto il carico è incrementato il numero di repliche torna a salire:
+Continuando ad osservare gli hpa si può notare che dopo poco tempo da quanto il carico è incrementato il numero di repliche torna a salire:
 ```sh
 kubectl get hpa --watch
 
@@ -198,9 +198,9 @@ kubectl get hpa --watch
 # markdown-toc-hpa            Deployment/markdown-toc            36%/50%   1         10        2          12m
 ```
 
-Interrompiamo il carico di workload.sh con `^C`
+Interrompere il carico di workload.sh con `^C`
 
-Puliamo il cluster minikube e stoppiamolo:
+Pulire il cluster Minikube e stopparlo:
 ```sh
 kubectl delete \
 -f markdown-toc-hpa.yaml \
@@ -211,12 +211,12 @@ kubectl delete \
 minikube stop
 ```
 
-Adesso che abbiamo testato il funzionamento del nostro cluster su minikube possiamo prepararci a dispiegarlo su un cloud provider.
+Adesso che si è testato il funzionamento del cluster su Minikube è possibile prepararsi a dispiegarlo su un cloud provider.
 
 ## Distribuzione in cloud
 Come provider cloud si è scelto Azure in quanto forniva un credito iniziale generoso e vantava un gran quantitativo di documentazione ed esempi.
 
-Il fatto di distribuire markdown-toc su un cloud provider fornisce anche la possibilità di attivare il cluster autoscaling di kubernetes. Questo permette a kubernetes di instanizare nuovi nodi in caso di necessità o rimuoverne quando il carico di lavoro lo permette.
+Il fatto di distribuire markdown-toc su un cloud provider fornisce anche la possibilità di attivare il cluster autoscaling di Kubernetes. Questo permette a Kubernetes di instanizare nuovi nodi in caso di necessità o rimuoverne quando il carico di lavoro lo permette.
 
 Il cluster autoscaling è fondamentale per ridurre il costo in quanto questo deriva dal numero di nodi (macchine virtuali) attivi, a prescindere dal fatto che essi siano sotto carico o meno.
 
@@ -268,7 +268,7 @@ Spostarsi nella cartella terraform:
 cd terraform
 ```
 
-Creiamo l'infrastruttura sul cloud provider:
+Creare l'infrastruttura sul cloud provider:
 ```sh
 terraform init
 terraform apply
@@ -417,7 +417,7 @@ Se si è soddisfatti delle operazioni che verranno eseguite inserire `yes`.
 # kubeconfig_path = "/home/kali/Desktop/markdown-toc-online/terraform/outputs/kubeconfig" 
 ```
 
-Una volta termina la creazione delle risorse (ci potrebbero volere anche 5 minuti), andiamo a settare la variabile d'ambiente `$KUBECONFIG` che indica il percorso al quale `kubectl` andrà a cercare il file di configurazione *kubeconfig*:
+Una volta termina la creazione delle risorse (ci potrebbero volere anche 5 minuti), si va a settare la variabile d'ambiente `$KUBECONFIG` che indica il percorso al quale `kubectl` andrà a cercare il file di configurazione *kubeconfig*:
 ```sh
 export KUBECONFIG="$(terraform output -raw kubeconfig_path)"
 ```
@@ -445,9 +445,9 @@ kubectl get pods
 # markdown-toc-frontend-57f9b58fdc-qplfp   1/1     Running   0          60m
 ```
 
-Ora possiamo testare il funzionamento dei service e dei pod come abbiamo fatto con Minikube.
+Ora è possibile testare il funzionamento dei service e dei pod come già fatto con Minikube.
 
-Testiamo il backend:
+Testing del backend:
 ```sh
 curl --location "$(kubectl get service markdown-toc -o jsonpath="{.status.loadBalancer.ingress[0].ip}")/markdown-toc.php" \
 --header 'Content-Type: application/json' \
@@ -460,13 +460,13 @@ Per testare il frontend aprire il link generato dal seguente script:
 ```sh
 echo "http://$(kubectl get service markdown-toc-frontend -o jsonpath="{.status.loadBalancer.ingress[0].ip}")/index.php"
 ```
-Ora attiviamo gli Horizontal Pod Autoscaler:
+Attivare gli horizontal pod autoscaler:
 ```sh
 kubectl apply -f ./markdown-toc-hpa.yaml
 kubectl apply -f ./markdown-toc-frontend-hpa.yaml
 ```
 
-E in un altro terminale eseguiamo:
+E in un altro terminale eseguire:
 ```sh
 # Se si è aperta una nuova shell è necessario settare nuovamente la variabile d'ambiente..
 cd terraform
@@ -484,7 +484,7 @@ kubectl get hpa --watch
 # markdown-toc-frontend-hpa   Deployment/markdown-toc-frontend   10%/50%         1         10        1          75s
 ```
 
-Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo genereremo del carico con lo script workload.sh (carica di lavoro solo l'API web non il frontend):
+Adesso testare anche che i pod possano scalare verso l'alto. Per farlo si genererà del carico con lo script workload.sh (carica di lavoro solo l'API web non il frontend):
 ```sh
 # il primo parametro indica l'indirizzo al quale inviare le richieste
 # il secondo invece l'intervallo di tempo in secondi tra una richiesta e l'altra
@@ -493,7 +493,7 @@ Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo generere
 ./workload.sh "http://$(kubectl get service markdown-toc -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" 1
 ```
 
-Continiuamo ad osservare gli hpa e noteremo che dopo poco tempo da quando il carico è incrementato il numero di repliche torna a salire:
+Continuando ad osservare gli hpa si può notare che dopo poco tempo da quando il carico è incrementato il numero di repliche torna a salire:
 ```sh
 kubectl get hpa --watch
 
@@ -536,7 +536,7 @@ Si può notare come sia stato instanziato un altro nodo (quello con l'*1* alla f
 
 Interrompere il carico di workload.sh con `^C`. Si noti che senza modificare le impostazioni di Azure passeranno circa 20 minuti prima che un nodo venga distrutto in automatico dopo che il carico è calato.
 
-Eliminiamo il cluster e le risorse create su Azure:
+Eliminare il cluster e le risorse create su Azure:
 ```sh
 cd terraform
 terraform destroy
