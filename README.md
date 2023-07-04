@@ -498,9 +498,14 @@ Continiuamo ad osservare gli hpa e noteremo che dopo poco tempo da quando il car
 kubectl get hpa --watch
 
 # NAME                        REFERENCE                          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-# markdown-toc-hpa            Deployment/markdown-toc            10%/50%   1         10        1          21m
-# markdown-toc-hpa            Deployment/markdown-toc            166%/50%  1         10        4          22m
-# markdown-toc-hpa            Deployment/markdown-toc            70%/50%  1         10        4          22m
+# markdown-toc-hpa            Deployment/markdown-toc            7%/50%    1         10        1          3h15m
+# markdown-toc-hpa            Deployment/markdown-toc            29%/50%   1         10        1          3h16m
+# markdown-toc-hpa            Deployment/markdown-toc            150%/50%  1         10        1          3h16m
+# markdown-toc-hpa            Deployment/markdown-toc            148%/50%  1         10        3          3h16m
+# markdown-toc-hpa            Deployment/markdown-toc            150%/50%  1         10        3          3h16m
+# markdown-toc-hpa            Deployment/markdown-toc            98%/50%   1         10        3          3h17m
+# markdown-toc-hpa            Deployment/markdown-toc            68%/50%   1         10        3          3h17m
+# markdown-toc-hpa            Deployment/markdown-toc            49%/50%   1         10        3          3h18m
 ```
 
 Avendo scelto dei nodi con pochi core (2) probabilmente già 3 repliche saranno abbastanza per innescare il cluster autoscaling (in quanto ogni replica [richiede minimo 500m](./markdown-toc.yaml#L41) di cpu).
