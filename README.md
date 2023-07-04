@@ -122,12 +122,6 @@ minikube start
 minikube addons enable metrics-server
 ```
 
-<!-- Per utilizzare i service di tipo LoadBalancer è [necessario](https://minikube.sigs.k8s.io/docs/handbook/accessing/#loadbalancer-access) utilizzare minikube tunnel.
-(Consiglio di aprire un termiale separato in quanto il tunnel andrà lasciato in esecuzione)
-```sh
-minikube tunnel
-``` -->
-
 Ora sempre dalla cartella radice della repository instanziamo i deployment e i service:
 ```sh
 kubectl apply -f ./markdown-toc.yaml
@@ -189,6 +183,7 @@ Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo generere
 # il primo parametro indica l'indirizzo al quale inviare le richieste
 # il secondo invece l'intervallo di tempo in secondi tra una richiesta e l'altra
 
+# se necessario modificare l'intervallo di tempo per aumentare o diminuire il carico
 ./workload.sh "$(minikube service --url markdown-toc)" 1.5
 ```
 
@@ -275,6 +270,7 @@ cd terraform
 
 Creiamo l'infrastruttura sul cloud provider:
 ```sh
+terraform init
 terraform apply
 
 # Terraform used the selected providers to generate the following execution plan. Resource actions are indicated with the following symbols:
@@ -365,7 +361,7 @@ terraform apply
 # Plan: 3 to add, 0 to change, 0 to destroy.
 
 # Changes to Outputs:
-#   + kubeconfig_path    = "/Users/Alessandro/Desktop/Terranetes Project/terraform/outputs/kubeconfig"
+#   + kubeconfig_path = "/home/kali/Desktop/markdown-toc-online/terraform/outputs/kubeconfig"
 
 # Do you want to perform these actions?
 #   Terraform will perform the actions described above.
@@ -375,6 +371,51 @@ terraform apply
 ```
 
 Se si è soddisfatti delle operazioni che verranno eseguite inserire `yes`.
+```sh
+# azurerm_resource_group.default: Creating...
+# azurerm_resource_group.default: Creation complete after 1s [id=/subscriptions/9145fb88-2a74-48cd-8095-91cdc0747649/resourceGroups/markdown-toc-online]
+# azurerm_kubernetes_cluster.default: Creating...
+# azurerm_kubernetes_cluster.default: Still creating... [10s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [20s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [30s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [40s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [50s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m0s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m10s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m20s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m30s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m40s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [1m50s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m0s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m10s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m20s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m30s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m40s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [2m50s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m0s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m10s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m20s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m30s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m40s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [3m50s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m0s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m10s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m20s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m30s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m40s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [4m50s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [5m0s elapsed]
+# azurerm_kubernetes_cluster.default: Still creating... [5m10s elapsed]
+# azurerm_kubernetes_cluster.default: Creation complete after 5m13s [id=/subscriptions/9145fb88-2a74-48cd-8095-91cdc0747649/resourceGroups/markdown-toc-online/providers/Microsoft.ContainerService/managedClusters/markdown-toc-online]
+# local_file.kubeconfig: Creating...
+# local_file.kubeconfig: Creation complete after 0s [id=af0d8b2a7fd32a51132f29168ba5a6e67cecf973]
+
+# Apply complete! Resources: 3 added, 0 changed, 0 destroyed.                                     
+                                                                                                
+# Outputs:                                                                                        
+                                                                                                
+# kubeconfig_path = "/home/kali/Desktop/markdown-toc-online/terraform/outputs/kubeconfig" 
+```
 
 Una volta termina la creazione delle risorse (ci potrebbero volere anche 5 minuti), andiamo a settare la variabile d'ambiente `$KUBECONFIG` che indica il percorso al quale `kubectl` andrà a cercare il file di configurazione *kubeconfig*:
 ```sh
@@ -434,9 +475,13 @@ cd ..
 
 kubectl get hpa --watch
 
-# NAME                        REFERENCE                          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-# markdown-toc-frontend-hpa   Deployment/markdown-toc-frontend   10%/50%   1         10        1          2m13s
-# markdown-toc-hpa            Deployment/markdown-toc            0%/50%    1         10        1          2m13s
+# NAME                        REFERENCE                          TARGETS         MINPODS   MAXPODS   REPLICAS   AGE
+# markdown-toc-hpa            Deployment/markdown-toc            <unknown>/50%   1         10        2          27s
+# markdown-toc-frontend-hpa   Deployment/markdown-toc-frontend   <unknown>/50%   1         10        2          27s
+# markdown-toc-hpa            Deployment/markdown-toc            10%/50%         1         10        2          60s
+# markdown-toc-frontend-hpa   Deployment/markdown-toc-frontend   10%/50%         1         10        2          60s
+# markdown-toc-hpa            Deployment/markdown-toc            10%/50%         1         10        1          75s
+# markdown-toc-frontend-hpa   Deployment/markdown-toc-frontend   10%/50%         1         10        1          75s
 ```
 
 Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo genereremo del carico con lo script workload.sh (carica di lavoro solo l'API web non il frontend):
@@ -444,7 +489,8 @@ Adesso testiamo anche che i pod possano scalare verso l'alto. Per farlo generere
 # il primo parametro indica l'indirizzo al quale inviare le richieste
 # il secondo invece l'intervallo di tempo in secondi tra una richiesta e l'altra
 
-./workload.sh "http://$(kubectl get service markdown-toc -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" 1.5
+# se necessario modificare l'intervallo di tempo per aumentare o diminuire il carico
+./workload.sh "http://$(kubectl get service markdown-toc -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" 1
 ```
 
 Continiuamo ad osservare gli hpa e noteremo che dopo poco tempo da quando il carico è incrementato il numero di repliche torna a salire:
@@ -452,48 +498,14 @@ Continiuamo ad osservare gli hpa e noteremo che dopo poco tempo da quando il car
 kubectl get hpa --watch
 
 # NAME                        REFERENCE                          TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
-# markdown-toc-hpa            Deployment/markdown-toc            0%/50%    1         10        1          9m31s
-# markdown-toc-hpa            Deployment/markdown-toc            6%/50%    1         10        1          23m
-# markdown-toc-hpa            Deployment/markdown-toc            46%/50%   1         10        1          24m
-# markdown-toc-hpa            Deployment/markdown-toc            60%/50%   1         10        1          25m
-# markdown-toc-hpa            Deployment/markdown-toc            60%/50%   1         10        2          25m
-# markdown-toc-hpa            Deployment/markdown-toc            59%/50%   1         10        2          25m
+# markdown-toc-hpa            Deployment/markdown-toc            10%/50%   1         10        1          21m
+# markdown-toc-hpa            Deployment/markdown-toc            166%/50%  1         10        4          22m
+# markdown-toc-hpa            Deployment/markdown-toc            70%/50%  1         10        4          22m
 ```
 
-Interrompiamo il carico di workload.sh con `^C`
+Avendo scelto dei nodi con pochi core (2) probabilmente già 3 repliche saranno abbastanza per innescare il cluster autoscaling (in quanto ogni replica [richiede minimo 500m](./markdown-toc.yaml#L41) di cpu).
 
-Adesso rimane da testare solo il cluster autoscaling.
-Per riuscire a farlo entrare in gioco la cosa più semplice è andare ad aumentare la richiesta minima di cpu dei pod in modo tale che Kubernetes non possa instanziarne troppi nello stesso nodo e debba quindi crearne uno nuovo.
-
-Modificare quindi questo valore nel file [markdown-toc.yaml](./markdown-toc.yaml):
-```yaml
-# ...
-    spec:
-      containers:
-      - name: markdown-toc
-        image: ventus218/markdown-toc
-        ports:
-        - containerPort: 80
-        resources:
-          requests:
-            cpu: 10m # <--- impostare a 500m
-          limits:
-            cpu: 500m
-```
-
-Applicare le modifiche:
-```sh
-kubectl apply -f markdown-toc.yaml
-```
-
-Generare il carico:
-
-```sh
-# il primo parametro indica l'indirizzo al quale inviare le richieste
-# il secondo invece l'intervallo di tempo in secondi tra una richiesta e l'altra
-
-./workload.sh "http://$(kubectl get service markdown-toc -o jsonpath="{.status.loadBalancer.ingress[0].ip}")" 1
-```
+A questo punto quindi Kubernetes instanzierà il nuovo nodo..
 
 Aprire un terminale in cui osservare i nodi del cluster:
 ```sh
