@@ -14,7 +14,7 @@ E' possibile fruire del servizio sia attraverso una pagina web che attraverso un
 - [I file di configurazione per Kubernetes](#i-file-di-configurazione-per-kubernetes)
   * [Risoluzione dei nomi](#risoluzione-dei-nomi)
   * [Horizontal Pod Autoscaler](#horizontal-pod-autoscaler)
-- [Testing su minikube](#testing-su-minikube)
+- [Testing su Minikube](#testing-su-minikube)
 - [Distribuzione in cloud](#distribuzione-in-cloud)
 - [Terraform](#terraform)
 - [I file di configurazione per Terraform](#i-file-di-configurazione-per-terraform)
