@@ -1,6 +1,6 @@
 #! /bin/sh
 
-function execute_request {
+execute_request() {
    curl --location "${1}/markdown-toc.php" \
     -s -o /dev/null \
     --header 'Content-Type: application/json' \
@@ -10,7 +10,7 @@ function execute_request {
         "no-first-h1": true
     }'
 
-    if [[ $? == 0 ]] 
+    if [ $? -eq 0 ] 
     then
         echo Request SUCCEDED
     else
