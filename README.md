@@ -539,6 +539,6 @@ Interrompere il carico di workload.sh con `^C`. Si noti che senza modificare le 
 Eliminiamo il cluster e le risorse create su Azure:
 ```sh
 cd terraform
-terraform destory
+terraform destroy
 cd ..
 ```
